@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "HISTORICO")
 @Getter
-@Builder
 public class Historico {
 
     @Id
@@ -25,6 +24,18 @@ public class Historico {
     private String tipoMovimentacao;
     @Column(nullable = false)
     private LocalDateTime criadoEm;
+
+    @Deprecated
+    public Historico(){
+
+    }
+
+    public Historico(Estoque estoque, Long quantidade, String tipoMovimentacao) {
+        this.estoque = estoque;
+        this.antigaQuantidade = estoque.getQuantidadeDisponivel();
+        this.novaQuantidade = quantidade;
+        this.tipoMovimentacao = tipoMovimentacao;
+    }
 
     @PrePersist
     public void prePersist(){

@@ -44,13 +44,7 @@ public class EstoqueService {
     }
 
     private Historico buildHistorico(Estoque estoque, Long quantidade, String tipoMovimentacao) {
-        Historico historico = Historico.builder()
-                .estoque(estoque)
-                .antigaQuantidade(estoque.getQuantidadeDisponivel())
-                .novaQuantidade(quantidade)
-                .tipoMovimentacao(tipoMovimentacao)
-                .build();
-
+        Historico historico = new Historico(estoque, quantidade, tipoMovimentacao);
         estoque.addHistorico(historico);
         return historico;
     }
