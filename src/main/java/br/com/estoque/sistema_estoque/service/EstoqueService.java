@@ -5,9 +5,9 @@ import br.com.estoque.sistema_estoque.model.Estoque;
 import br.com.estoque.sistema_estoque.model.Historico;
 import br.com.estoque.sistema_estoque.repository.EstoqueRepository;
 import br.com.estoque.sistema_estoque.repository.HistoricoRepository;
-import br.com.estoque.sistema_estoque.request.EstoqueRequest;
-import br.com.estoque.sistema_estoque.request.EntradaEstoqueRequest;
-import br.com.estoque.sistema_estoque.request.SaidaEstoqueRequest;
+import br.com.estoque.sistema_estoque.request.CadastroEstoqueRequest;
+import br.com.estoque.sistema_estoque.request.RegistrarEntradaRequest;
+import br.com.estoque.sistema_estoque.request.RegistrarSaidaRequest;
 import br.com.estoque.sistema_estoque.response.EstoqueResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,20 +21,24 @@ public class EstoqueService {
     private final EstoqueRepository estoqueRepository;
     private final HistoricoRepository historicoRepository;
 
-    public EstoqueResponse registrarEstoque(EstoqueRequest request) {
+    public EstoqueResponse cadastrarEstoque(CadastroEstoqueRequest request) {
         Estoque estoque = estoqueRepository.save(request.toModel());
         return buildEstoqueResponse(estoque);
     }
 
-    private EstoqueResponse buildEstoqueResponse(Estoque estoque) {
-        return new EstoqueResponse(estoque.getId(), estoque.getCodigoProduto(), estoque.getQuantidadeDisponivel(), estoque.getCodigoBarras());
+    public void registrarEntrada(RegistrarEntradaRequest request) throws ValidationException {
+        Estoque estoque = findByEstoqueId(request.getEstoqueId());
+        criarHistoricoMovimentacao(request.getTipoEntrada().name(), estoque, estoque.getQuantidadeDisponivel() + request.getQuantidade());
     }
 
-    public void registrarEntradaEstoque(EntradaEstoqueRequest request) throws ValidationException {
+    public void registrarSaida(RegistrarSaidaRequest request) throws ValidationException {
         Estoque estoque = findByEstoqueId(request.getEstoqueId());
-        Long novaQuantidadeDisponivel = estoque.getQuantidadeDisponivel() + request.getQuantidade();
-        Historico historico = buildHistorico(estoque, novaQuantidadeDisponivel, request.getTipoEntrada().name());
-        estoque.atualizarQuantidade(novaQuantidadeDisponivel);
+        criarHistoricoMovimentacao(request.getTipoSaida().name(), estoque, validarQuantidadeSaida(estoque.getQuantidadeDisponivel(), request.getQuantidade()));
+    }
+
+    private void criarHistoricoMovimentacao(String tipoMovimentacao, Estoque estoque, Long quantidadeDisponivel) {
+        Historico historico = buildHistorico(estoque, quantidadeDisponivel, tipoMovimentacao);
+        estoque.atualizarQuantidade(quantidadeDisponivel);
         historicoRepository.save(historico);
         estoqueRepository.save(estoque);
     }
@@ -43,7 +47,7 @@ public class EstoqueService {
         Historico historico = Historico.builder()
                 .estoque(estoque)
                 .antigaQuantidade(estoque.getQuantidadeDisponivel())
-                .quantidade(quantidade)
+                .novaQuantidade(quantidade)
                 .tipoMovimentacao(tipoMovimentacao)
                 .build();
 
@@ -55,23 +59,15 @@ public class EstoqueService {
         return estoqueRepository.findById(estoqueId).orElseThrow(() -> new ValidationException("Estoque não encontrado!"));
     }
 
-    public void registrarSaidaEstoque(SaidaEstoqueRequest request) throws ValidationException {
-        Estoque estoque = findByEstoqueId(request.getEstoqueId());
-        Long novaQuantidadeDisponivel = validarQuantidadeSaida(estoque.getQuantidadeDisponivel(), request.getQuantidade());
-        Historico historico = buildHistorico(estoque, novaQuantidadeDisponivel, request.getTipoSaida().name());
-        estoque.atualizarQuantidade(novaQuantidadeDisponivel);
-        historicoRepository.save(historico);
-        estoqueRepository.save(estoque);
-
-    }
-
     private Long validarQuantidadeSaida(Long quantidadeDisponivel, Long quantidade) throws ValidationException {
-
         if(quantidade > quantidadeDisponivel){
             throw new ValidationException("A quantidade de saida nao pode ser maior do que a disponivel!");
         }
-
         return quantidadeDisponivel - quantidade;
-
     }
+
+    private EstoqueResponse buildEstoqueResponse(Estoque estoque) {
+        return new EstoqueResponse(estoque.getId(), estoque.getCodigoProduto(), estoque.getQuantidadeDisponivel(), estoque.getCodigoBarras());
+    }
+
 }

@@ -1,9 +1,9 @@
 package br.com.estoque.sistema_estoque.controller;
 
 import br.com.estoque.sistema_estoque.exception.ValidationException;
-import br.com.estoque.sistema_estoque.request.EstoqueRequest;
-import br.com.estoque.sistema_estoque.request.EntradaEstoqueRequest;
-import br.com.estoque.sistema_estoque.request.SaidaEstoqueRequest;
+import br.com.estoque.sistema_estoque.request.CadastroEstoqueRequest;
+import br.com.estoque.sistema_estoque.request.RegistrarEntradaRequest;
+import br.com.estoque.sistema_estoque.request.RegistrarSaidaRequest;
 import br.com.estoque.sistema_estoque.service.EstoqueService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,20 +20,20 @@ public class EstoqueController {
     private final EstoqueService estoqueService;
 
     @PostMapping
-    public ResponseEntity<?> registrarEstoque(@RequestBody @Valid EstoqueRequest request){
-        return ResponseEntity.status(HttpStatus.CREATED.value()).body(estoqueService.registrarEstoque(request));
+    public ResponseEntity<?> cadastrarEstoque(@RequestBody @Valid CadastroEstoqueRequest request){
+        return ResponseEntity.status(HttpStatus.CREATED.value()).body(estoqueService.cadastrarEstoque(request));
     }
 
 
     @PutMapping(value = "/registrarEntrada")
-    public ResponseEntity<?> registrarEntradaEstoque(@RequestBody @Valid EntradaEstoqueRequest request) throws ValidationException {
-        estoqueService.registrarEntradaEstoque(request);
+    public ResponseEntity<?> registrarEntrada(@RequestBody @Valid RegistrarEntradaRequest request) throws ValidationException {
+        estoqueService.registrarEntrada(request);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping(value = "/registrarSaida")
-    public ResponseEntity<?> registrarSaidaEstoque(@RequestBody @Valid SaidaEstoqueRequest request) throws ValidationException {
-        estoqueService.registrarSaidaEstoque(request);
+    public ResponseEntity<?> registrarSaidaEstoque(@RequestBody @Valid RegistrarSaidaRequest request) throws ValidationException {
+        estoqueService.registrarSaida(request);
         return ResponseEntity.ok().build();
     }
 

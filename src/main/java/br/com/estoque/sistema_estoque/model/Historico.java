@@ -20,7 +20,7 @@ public class Historico {
     @Column(nullable = false)
     private Long antigaQuantidade;
     @Column(nullable = false)
-    private Long quantidade;
+    private Long novaQuantidade;
     @Column(nullable = false)
     private String tipoMovimentacao;
     @Column(nullable = false)

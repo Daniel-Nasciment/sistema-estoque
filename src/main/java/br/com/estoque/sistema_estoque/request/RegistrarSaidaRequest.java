@@ -5,11 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
-public class SaidaEstoqueRequest {
-    @NotNull
-    private Long estoqueId;
-    @NotNull
-    private Long quantidade;
+public class RegistrarSaidaRequest extends RegistrarMovimentacaoRequest {
     @NotNull
     private ETipoSaida tipoSaida;
 }

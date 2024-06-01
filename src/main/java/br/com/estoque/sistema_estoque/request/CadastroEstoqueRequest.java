@@ -9,7 +9,7 @@ import lombok.Getter;
 
 @Schema
 @Getter
-public class EstoqueRequest {
+public class CadastroEstoqueRequest {
 
     @NotBlank
     private String codigoProduto;
