@@ -7,6 +7,7 @@ import br.com.estoque.sistema_estoque.repository.EstoqueRepository;
 import br.com.estoque.sistema_estoque.repository.HistoricoRepository;
 import br.com.estoque.sistema_estoque.request.EstoqueRequest;
 import br.com.estoque.sistema_estoque.request.EntradaEstoqueRequest;
+import br.com.estoque.sistema_estoque.request.SaidaEstoqueRequest;
 import br.com.estoque.sistema_estoque.response.EstoqueResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,5 +53,25 @@ public class EstoqueService {
 
     private Estoque findByEstoqueId(Long estoqueId) throws ValidationException {
         return estoqueRepository.findById(estoqueId).orElseThrow(() -> new ValidationException("Estoque não encontrado!"));
+    }
+
+    public void registrarSaidaEstoque(SaidaEstoqueRequest request) throws ValidationException {
+        Estoque estoque = findByEstoqueId(request.getEstoqueId());
+        Long novaQuantidadeDisponivel = validarQuantidadeSaida(estoque.getQuantidadeDisponivel(), request.getQuantidade());
+        Historico historico = buildHistorico(estoque, novaQuantidadeDisponivel, request.getTipoSaida().name());
+        estoque.atualizarQuantidade(novaQuantidadeDisponivel);
+        historicoRepository.save(historico);
+        estoqueRepository.save(estoque);
+
+    }
+
+    private Long validarQuantidadeSaida(Long quantidadeDisponivel, Long quantidade) throws ValidationException {
+
+        if(quantidade > quantidadeDisponivel){
+            throw new ValidationException("A quantidade de saida nao pode ser maior do que a disponivel!");
+        }
+
+        return quantidadeDisponivel - quantidade;
+
     }
 }
