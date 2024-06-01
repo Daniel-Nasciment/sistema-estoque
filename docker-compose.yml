@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+
+  estoque-db:
+    container_name: estoque-db
+    image: postgres:latest
+    networks:
+      - my-network
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=estoque-db
+    ports:
+      - 5432:5432
+networks:
+  my-network:
+    driver: bridge
