@@ -8,6 +8,7 @@ import br.com.estoque.sistema_estoque.request.RegistrarSaidaRequest;
 import br.com.estoque.sistema_estoque.service.EstoqueService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,6 @@ public class EstoqueController {
     public ResponseEntity<?> cadastrarEstoque(@RequestBody @Valid CadastroEstoqueRequest request){
         return ResponseEntity.status(HttpStatus.CREATED.value()).body(estoqueService.cadastrarEstoque(request));
     }
-
 
     @PutMapping(value = "/registrarEntrada")
     public ResponseEntity<?> registrarEntrada(@RequestBody @Valid RegistrarEntradaRequest request) throws ValidationException {
@@ -43,7 +43,5 @@ public class EstoqueController {
         estoqueService.ajustar(request);
         return ResponseEntity.ok().build();
     }
-
-
 
 }

@@ -4,7 +4,6 @@ import br.com.estoque.sistema_estoque.exception.ValidationException;
 import br.com.estoque.sistema_estoque.model.Estoque;
 import br.com.estoque.sistema_estoque.model.Historico;
 import br.com.estoque.sistema_estoque.repository.EstoqueRepository;
-import br.com.estoque.sistema_estoque.repository.HistoricoRepository;
 import br.com.estoque.sistema_estoque.request.AjusteEstoqueRequest;
 import br.com.estoque.sistema_estoque.request.CadastroEstoqueRequest;
 import br.com.estoque.sistema_estoque.request.RegistrarEntradaRequest;
@@ -20,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class EstoqueService {
 
     private final EstoqueRepository estoqueRepository;
-    private final HistoricoRepository historicoRepository;
+    private final HistoricoService historicoService;
 
     public EstoqueResponse cadastrarEstoque(CadastroEstoqueRequest request) {
         log.info("Iniciando cadastro de estoque.");
@@ -33,47 +32,35 @@ public class EstoqueService {
     public void registrarEntrada(RegistrarEntradaRequest request) throws ValidationException {
         log.info("Registrando entrada de estoque.");
         Estoque estoque = findByEstoqueId(request.getEstoqueId());
-        Historico historico = criarHistoricoMovimentacao(request.getTipoEntrada().name(), estoque, estoque.getQuantidadeDisponivel() + request.getQuantidade());
-        saveEstoqueAndHistorico(estoque, historico);
+        Historico historico = historicoService.criarHistoricoMovimentacao(request.getTipoEntrada().name(), estoque, estoque.getQuantidadeDisponivel() + request.getQuantidade());
+        saveEstoque(estoque);
+        historicoService.saveHistorico(historico);
         log.info("Entrada de estoque registrada com sucesso para o estoque ID: {}", request.getEstoqueId());
     }
 
     public void registrarSaida(RegistrarSaidaRequest request) throws ValidationException {
         log.info("Registrando saída de estoque.");
         Estoque estoque = findByEstoqueId(request.getEstoqueId());
-        Historico historico = criarHistoricoMovimentacao(request.getTipoSaida().name(), estoque, validarQuantidadeSaida(estoque.getQuantidadeDisponivel(), request.getQuantidade()));
-        saveEstoqueAndHistorico(estoque, historico);
+        Historico historico = historicoService.criarHistoricoMovimentacao(request.getTipoSaida().name(), estoque, validarQuantidadeSaida(estoque.getQuantidadeDisponivel(), request.getQuantidade()));
+        saveEstoque(estoque);
+        historicoService.saveHistorico(historico);
         log.info("Saída de estoque registrada com sucesso para o estoque ID: {}", request.getEstoqueId());
     }
 
     public void ajustar(AjusteEstoqueRequest request) throws ValidationException {
         log.info("Ajustando estoque.");
         Estoque estoque = findByEstoqueId(request.getEstoqueId());
-        Historico historico = criarHistoricoMovimentacao(request.getTipoMovimentacao(), estoque, request.getQuantidade());
+        Historico historico = historicoService.criarHistoricoMovimentacao(request.getTipoMovimentacao(), estoque, request.getQuantidade());
         estoque.ajustar(request);
-        saveEstoqueAndHistorico(estoque, historico);
+        saveEstoque(estoque);
+        historicoService.saveHistorico(historico);
         log.info("Ajuste de estoque concluído com sucesso para o estoque ID: {}", request.getEstoqueId());
     }
 
-    private void saveEstoqueAndHistorico(Estoque estoque, Historico historico) {
-        log.debug("Salvando estoque e histórico. Estoque: {}, Histórico: {}", estoque, historico);
+    private void saveEstoque(Estoque estoque) {
+        log.debug("Salvando estoque. Estoque: {}", estoque);
         estoqueRepository.save(estoque);
-        historicoRepository.save(historico);
-        log.debug("Estoque e histórico salvos com sucesso.");
-    }
-
-    private Historico criarHistoricoMovimentacao(String tipoMovimentacao, Estoque estoque, Long quantidadeDisponivel) {
-        log.debug("Criando histórico de movimentação. Tipo: {}, Estoque: {}, Quantidade Disponível: {}", tipoMovimentacao, estoque, quantidadeDisponivel);
-        Historico historico = buildHistorico(estoque, quantidadeDisponivel, tipoMovimentacao);
-        estoque.atualizarQuantidade(quantidadeDisponivel);
-        return historico;
-    }
-
-    private Historico buildHistorico(Estoque estoque, Long quantidade, String tipoMovimentacao) {
-        log.debug("Construindo histórico. Estoque: {}, Quantidade: {}, Tipo Movimentação: {}", estoque, quantidade, tipoMovimentacao);
-        Historico historico = new Historico(estoque, quantidade, tipoMovimentacao);
-        estoque.addHistorico(historico);
-        return historico;
+        log.debug("Estoque salvo com sucesso.");
     }
 
     private Estoque findByEstoqueId(Long estoqueId) throws ValidationException {
