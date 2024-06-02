@@ -1,5 +1,6 @@
 package br.com.estoque.sistema_estoque.model;
 
+import br.com.estoque.sistema_estoque.request.AjusteEstoqueRequest;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -60,4 +61,9 @@ public class Estoque {
         this.historico.add(historico);
     }
 
+    public void ajustar(AjusteEstoqueRequest request) {
+        this.codigoProduto = request.getCodigoProduto();
+        this.codigoBarras = request.getCodigoBaras();
+        this.quantidadeDisponivel = request.getQuantidade();
+    }
 }

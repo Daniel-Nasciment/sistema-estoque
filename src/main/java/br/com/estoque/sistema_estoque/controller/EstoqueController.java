@@ -1,6 +1,7 @@
 package br.com.estoque.sistema_estoque.controller;
 
 import br.com.estoque.sistema_estoque.exception.ValidationException;
+import br.com.estoque.sistema_estoque.request.AjusteEstoqueRequest;
 import br.com.estoque.sistema_estoque.request.CadastroEstoqueRequest;
 import br.com.estoque.sistema_estoque.request.RegistrarEntradaRequest;
 import br.com.estoque.sistema_estoque.request.RegistrarSaidaRequest;
@@ -34,6 +35,12 @@ public class EstoqueController {
     @PutMapping(value = "/registrarSaida")
     public ResponseEntity<?> registrarSaidaEstoque(@RequestBody @Valid RegistrarSaidaRequest request) throws ValidationException {
         estoqueService.registrarSaida(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping(value = "/ajuste")
+    public ResponseEntity<?> ajustarEstoque(@RequestBody @Valid AjusteEstoqueRequest request) throws ValidationException {
+        estoqueService.ajustar(request);
         return ResponseEntity.ok().build();
     }
 
